@@ -1,0 +1,81 @@
+plugins {
+	id 'org.springframework.boot' version '3.3.0'
+	id 'java'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+	mavenCentral()
+}
+
+sourceSets {
+	componenttesting{
+		java {
+			compileClasspath += sourceSets.main.output + sourceSets.test.output
+			runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+			srcDir file('src/componenttesting/java')
+		}
+		resources{
+			srcDirs=['src/componenttesting/resources', 'src/componenttesting/java']
+			exclude '**/*.java'
+		}
+	}
+}
+
+configurations {
+	componenttestingImplementation.extendsFrom testImplementation
+	componenttestingRuntimeOnly.extendsFrom testRuntimeOnly
+	componenttestingCompileOnly.extendsFrom compileOnly
+	componenttestingAnnotationProcessor.extendsFrom annotationProcessor
+	componenttestingCompile.extendsFrom compile
+	componenttestingImplementation.extendsFrom implementation
+	componenttestingRuntimeOnly.extendsFrom runtimeOnly
+
+}
+
+task componenttesting (type: Test) {
+	doFirst {
+		if (test.state.failure != null) {
+			throw new StopActionException("Component tests will not run because unit tests have failed.")
+		}
+	}
+	print("Running component tests...")
+	include '**/*ExampleApplicationTestSuite*'
+	description = 'Runs the component tests.'
+	group = 'componenttesting'
+	testClassesDirs = sourceSets.componenttesting.output.classesDirs
+	classpath = sourceSets.componenttesting.runtimeClasspath
+	useJUnitPlatform()
+	testLogging.showStandardStreams = true
+}
+
+test {
+	useJUnitPlatform()
+	testLogging.showStandardStreams=false
+	finalizedBy componenttesting
+}
+
+dependencies {
+	// tag::actuator[]
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	// end::actuator[]
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// tag::tests[]
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+
+	testImplementation 'com.intuit.karate:karate-junit5:1.4.1'
+	testImplementation 'com.intuit.karate:karate-apache:0.9.6'
+	testImplementation 'com.intuit.karate:karate-core:1.4.1'
+	testImplementation 'net.masterthought:cucumber-reporting:5.10.1'
+
+	// end::tests[]
+}
+
+//test {
+//	useJUnitPlatform()
+//}

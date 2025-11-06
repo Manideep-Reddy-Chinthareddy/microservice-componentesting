@@ -1,0 +1,7 @@
+
+
+example.service.url: http://localhost:8081/api
+
+logging:
+  level:
+    root: INFO
